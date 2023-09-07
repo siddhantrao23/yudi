@@ -1,49 +1,34 @@
-use std::error;
-
-/// Application result type.
-pub type AppResult<T> = std::result::Result<T, Box<dyn error::Error>>;
-
-/// Application.
-#[derive(Debug)]
-pub struct App {
-    /// Is the application running?
-    pub running: bool,
-    /// counter
-    pub counter: u8,
+pub struct App<'a> {
+  pub running: bool,
+  pub titles: Vec<&'a str>,
+  pub index: usize,
 }
 
-impl Default for App {
-    fn default() -> Self {
-        Self {
-            running: true,
-            counter: 0,
-        }
+impl<'a> Default for App<'a> {
+  fn default() -> Self {
+    Self {
+      running: true,
+      titles: vec!["tab1", "tab2", "tab3"],
+      index: 0,
     }
+  }
 }
 
-impl App {
-    /// Constructs a new instance of [`App`].
-    pub fn new() -> Self {
-        Self::default()
-    }
+impl<'a> App<'a> {
+  pub fn new() -> Self {
+    Self::default()
+  }
 
-    /// Handles the tick event of the terminal.
-    pub fn tick(&self) {}
+  pub fn next(&mut self) {
+    self.index = (self.index + 1) % self.titles.len();
+  }
 
-    /// Set running to false to quit the application.
-    pub fn quit(&mut self) {
-        self.running = false;
+  pub fn previous(&mut self) {
+    if self.index > 0 {
+      self.index -= 1;
+    } else {
+      self.index = self.titles.len() - 1;
     }
+  }
 
-    pub fn increment_counter(&mut self) {
-        if let Some(res) = self.counter.checked_add(1) {
-            self.counter = res;
-        }
-    }
-
-    pub fn decrement_counter(&mut self) {
-        if let Some(res) = self.counter.checked_sub(1) {
-            self.counter = res;
-        }
-    }
 }
