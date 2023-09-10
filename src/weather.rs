@@ -105,7 +105,7 @@ pub async fn request_weather() -> Result<(), reqwest::Error> {
       long
   );
 
-  let weather_data = reqwest::get("https://api.open-meteo.com/v1/forecast?latitude=12.9719&longitude=77.5937&current_weather=true&timezone=auto")
+  let weather_data = reqwest::get(url)
     .await?
     .text()
     .await?;

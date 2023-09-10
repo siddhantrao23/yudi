@@ -1,6 +1,8 @@
 use ratatui::{style::{Style, Modifier, Color}, widgets::{Block, Borders}};
 use tui_textarea::TextArea;
 
+// TODO: make custom textarea struct and move there
+
 pub fn inactivate(textarea: &mut TextArea) {
   textarea.set_cursor_line_style(Style::default());
   textarea.set_cursor_style(Style::default());

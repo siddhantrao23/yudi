@@ -1,5 +1,9 @@
-use tui_textarea::TextArea;
+use std::io;
 
+use crossterm_026::event;
+use ratatui::{Terminal, prelude::Backend};
+use tui_textarea::{TextArea, Input, Key};
+use crate::{ui::render, util::{inactivate, activate}};
 
 // TODO: make textarea its own struct
 // and add the util funcs to it
@@ -40,4 +44,29 @@ impl<'a> App<'a> {
     }
   }
 
+  pub fn run<B: Backend>(&mut self, terminal: &mut Terminal<B>) -> io::Result<()> {
+    loop {
+      terminal.draw(|f| render(f, &self))?;
+
+      match event::read()?.into() {
+        Input {key: Key::Char('q'), ..}
+        | Input {key: Key::Char('c'), ctrl: true, ..}
+            => return Ok(()), 
+        Input { key: Key::Esc, .. } | Input {key: Key::Enter, ..} => { 
+          // save journal data
+          inactivate(&mut self.textarea);
+          self.text_active = false;
+        },
+        Input {key: Key::Tab, ..} | Input {key: Key::Right, ..} => self.next(),
+        Input {key: Key::Left, ..} => self.previous(),
+        Input {key: Key::Char('i'), ..} => {
+          activate(&mut self.textarea);
+          self.text_active = true;
+        },
+        input => if self.text_active {
+          self.textarea.input(input);
+        },
+      }
+    }
+  }
 }
