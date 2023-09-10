@@ -1,6 +1,8 @@
-use ratatui::widgets::{Block, Borders};
 use tui_textarea::TextArea;
 
+
+// TODO: make textarea its own struct
+// and add the util funcs to it
 pub struct App<'a> {
   pub running: bool,
   pub titles: Vec<&'a str>,
@@ -13,7 +15,7 @@ impl<'a> Default for App<'a> {
   fn default() -> Self {
     Self {
       running: true,
-      titles: vec!["tab1", "tab2", "tab3"],
+      titles: vec!["day", "week", "month"],
       tab_index: 0,
       textarea: TextArea::default(),
       text_active: false,

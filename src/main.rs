@@ -1,25 +1,32 @@
 mod app;
+mod weather;
+mod util;
 
 use crossterm_026 as crossterm;
+use util::{inactivate, activate};
+use weather::request_weather;
 
 use std::{error::Error, io};
 
-use crossterm::{terminal::{enable_raw_mode, EnterAlternateScreen, disable_raw_mode, LeaveAlternateScreen}, execute, event::{EnableMouseCapture, DisableMouseCapture, Event, self, KeyCode, KeyEventKind, KeyModifiers}};
+use crossterm::{terminal::{enable_raw_mode, EnterAlternateScreen, disable_raw_mode, LeaveAlternateScreen}, execute, event::{EnableMouseCapture, DisableMouseCapture, self}};
 use ratatui::{
-  Terminal, Frame, text::Line, symbols::{DOT, block},
+  Terminal, Frame, text::Line, symbols::DOT,
   layout::{Layout, Direction, Constraint}, 
   widgets::{Block, Tabs, Borders}, 
   style::{Style, Modifier, Color},
   backend::{CrosstermBackend, Backend},
 };
-use tui_textarea::{Key, Input, TextArea};
+use tui_textarea::{Key, Input};
 
 use crate::app::App;
 
-fn main() -> Result<(), Box<dyn Error>> {
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn Error>> {
+  let stdout = io::stdout();
+  let mut stdout = stdout.lock(); 
+
   enable_raw_mode()?;
 
-  let mut stdout = io::stdout();
   execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
   let backend = CrosstermBackend::new(stdout);
   let mut terminal = Terminal::new(backend)?;
@@ -32,6 +39,7 @@ fn main() -> Result<(), Box<dyn Error>> {
   disable_raw_mode()?;
   execute!(terminal.backend_mut(), LeaveAlternateScreen, DisableMouseCapture)?;
   terminal.show_cursor()?;
+  request_weather().await?;
 
   if let Err(err) = res {
     println!("{err:?}");
@@ -39,21 +47,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
   Ok(())
 }
-/*
-      if key.kind == KeyEventKind::Press {
-        match key.code {
-          KeyCode::Char('q') => return Ok(()),
-          KeyCode::Char('c') | KeyCode::Char('C') => {
-            if key.modifiers == KeyModifiers::CONTROL {
-                return Ok(());
-            }
-          }
-          KeyCode::Right => app.next(),
-          KeyCode::Tab => app.next(),
-          KeyCode::Left => app.previous(),
-          _ => {}
-        }
-      } */
 
 fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<()> {
   loop {
@@ -63,16 +56,17 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
       Input {key: Key::Char('q'), ..}
       | Input {key: Key::Char('c'), ctrl: true, ..}
           => return Ok(()), 
-      Input { key: Key::Esc, .. } => { 
+      Input { key: Key::Esc, .. } | Input {key: Key::Enter, ..} => { 
+        // save journal data
         inactivate(&mut app.textarea);
         app.text_active = false;
       },
-      Input {key: Key::Char('i'), ..} | Input {key: Key::Enter, ..} => {
-        activate(&mut app.textarea);
-        app.text_active = true;
-      }
       Input {key: Key::Tab, ..} | Input {key: Key::Right, ..} => app.next(),
       Input {key: Key::Left, ..} => app.previous(),
+      Input {key: Key::Char('i'), ..} => {
+        activate(&mut app.textarea);
+        app.text_active = true;
+      },
       input => if app.text_active {
         app.textarea.input(input);
       },
@@ -80,32 +74,16 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, mut app: App) -> io::Result<(
   }
 }
 
-fn inactivate(textarea: &mut TextArea) {
-  textarea.set_cursor_line_style(Style::default());
-  textarea.set_cursor_style(Style::default());
-  let b = textarea.block().cloned().unwrap_or_else(|| Block::default().borders(Borders::ALL));
-  textarea.set_block(
-      b.style(Style::default().fg(Color::DarkGray))
-  );
-}
 
-fn activate(textarea: &mut TextArea) {
-  textarea.set_cursor_line_style(Style::default().add_modifier(Modifier::UNDERLINED));
-  textarea.set_cursor_style(Style::default().add_modifier(Modifier::REVERSED));
-  let b = textarea.block().cloned().unwrap_or_else(|| Block::default().borders(Borders::ALL));
-  textarea.set_block(b.style(Style::default()));
-}
 
 fn render_ui<B: Backend>(f: &mut Frame<B>, app: &App) {
   let size = f.size();
 
   let chunks = Layout::default()
     .direction(Direction::Vertical)
-    .constraints([Constraint::Length(3), Constraint::Min(0)].as_ref())
+    .constraints([Constraint::Length(1), Constraint::Length(4)].as_ref())
     .split(size);
-  let block = Block::default();
-  f.render_widget(block, size);
-  
+
   let titles: Vec<Line> = app.titles.iter().cloned().map(Line::from).collect();
   let tabs = Tabs::new(titles)
     .divider(DOT)
@@ -113,16 +91,18 @@ fn render_ui<B: Backend>(f: &mut Frame<B>, app: &App) {
       Style::default().add_modifier(Modifier::BOLD).bg(Color::Green)
     )
     .select(app.tab_index)
-    .block(Block::default().title("Tab Example")
-  );
+    .block(Block::default());
   f.render_widget(tabs, chunks[0]);
 
-  let body = match app.tab_index {
-    0 => Block::default().title("Inner 1"),
-    1 => Block::default().title("Inner 2").borders(Borders::ALL),
-    2 => Block::default().title("Inner 3"),
+  let chunks = Layout::default()
+    .direction(Direction::Horizontal)
+    .constraints([Constraint::Percentage(70), Constraint::Percentage(30)].as_ref())
+    .split(chunks[1]);
+  
+  match app.tab_index {
+    0 => f.render_widget(app.textarea.widget(), chunks[1]),
+    1 => f.render_widget(app.textarea.widget(), chunks[1]),
+    2 => {},
     _ => unreachable!()
   };
-
-  f.render_widget(app.textarea.widget(), chunks[1])
 }
