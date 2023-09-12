@@ -1,19 +1,15 @@
 mod app;
 mod ui;
+mod textwidget;
 mod weather;
-mod util;
 
 use crossterm_026 as crossterm;
-use util::inactivate;
 use weather::request_weather;
 
 use std::{error::Error, io};
 
 use crossterm::{terminal::{enable_raw_mode, EnterAlternateScreen, disable_raw_mode, LeaveAlternateScreen}, execute, event::{EnableMouseCapture, DisableMouseCapture}};
-use ratatui::{
-  Terminal, widgets::{Block, Borders}, 
-  backend::CrosstermBackend,
-};
+use ratatui::{Terminal, backend::CrosstermBackend};
 use crate::app::App;
 
 #[tokio::main]
@@ -28,8 +24,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
   let mut terminal = Terminal::new(backend)?;
 
   let mut app = App::new();
-  app.textarea.set_block(Block::default().borders(Borders::ALL).title("Today's journal entry..."));
-  inactivate(&mut app.textarea);
+  app.text_widget.inactivate();
   let res = app.run(&mut terminal);
 
   disable_raw_mode()?;

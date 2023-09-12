@@ -2,17 +2,14 @@ use std::io;
 
 use crossterm_026::event;
 use ratatui::{Terminal, prelude::Backend};
-use tui_textarea::{TextArea, Input, Key};
-use crate::{ui::render, util::{inactivate, activate}};
+use tui_textarea::{Input, Key};
+use crate::{ui::render, textwidget::TextWidget};
 
-// TODO: make textarea its own struct
-// and add the util funcs to it
 pub struct App<'a> {
   pub running: bool,
   pub titles: Vec<&'a str>,
   pub tab_index: usize,
-  pub textarea: TextArea<'a>,
-  pub text_active: bool,
+  pub text_widget: TextWidget<'a>,
 }
 
 impl<'a> Default for App<'a> {
@@ -21,8 +18,7 @@ impl<'a> Default for App<'a> {
       running: true,
       titles: vec!["day", "week", "month"],
       tab_index: 0,
-      textarea: TextArea::default(),
-      text_active: false,
+      text_widget: TextWidget::new(),
     }
   }
 }
@@ -54,17 +50,15 @@ impl<'a> App<'a> {
             => return Ok(()), 
         Input { key: Key::Esc, .. } | Input {key: Key::Enter, ..} => { 
           // save journal data
-          inactivate(&mut self.textarea);
-          self.text_active = false;
+          self.text_widget.inactivate();
         },
         Input {key: Key::Tab, ..} | Input {key: Key::Right, ..} => self.next(),
         Input {key: Key::Left, ..} => self.previous(),
         Input {key: Key::Char('i'), ..} => {
-          activate(&mut self.textarea);
-          self.text_active = true;
+          self.text_widget.activate();
         },
-        input => if self.text_active {
-          self.textarea.input(input);
+        input => if self.text_widget.active {
+          self.text_widget.textarea.input(input);
         },
       }
     }

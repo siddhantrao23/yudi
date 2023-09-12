@@ -9,6 +9,7 @@ use ratatui::{
 use crate::app::App;
 
 pub fn render<B: Backend>(f: &mut Frame<B>, app: &App) {
+  // TODO: add the call to weather here and render the weather for week and day
   let size = f.size();
 
   let chunks = Layout::default()
@@ -32,8 +33,8 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &App) {
     .split(chunks[1]);
   
   match app.tab_index {
-    0 => f.render_widget(app.textarea.widget(), chunks[1]),
-    1 => f.render_widget(app.textarea.widget(), chunks[1]),
+    0 => f.render_widget(app.text_widget.textarea.widget(), chunks[1]),
+    1 => f.render_widget(app.text_widget.textarea.widget(), chunks[1]),
     2 => {},
     _ => unreachable!()
   };

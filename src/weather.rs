@@ -113,6 +113,7 @@ pub async fn request_weather() -> Result<(), reqwest::Error> {
   let val:WeatherResponse = serde_json::from_str(&weather_data).unwrap();
 
   println!("{:?}", val);
-  println!("{}", convert_code(val.current_weather.weathercode).icon);
+  let res = convert_code(val.current_weather.weathercode);
+  println!("{} {}", res.icon, res.condition);
   Ok(())
 }

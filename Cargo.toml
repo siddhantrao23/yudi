@@ -1,4 +1,5 @@
 [package]
+# TODO: add extra fields 
 name = "yudi"
 version = "0.1.0"
 authors = ["Siddhant Rao <raosiddhant99@gmail.com>"]
@@ -6,6 +7,7 @@ license = "MIT"
 edition = "2021"
 
 [dependencies]
+# TODO: clean up
 tui-textarea = { git = "https://github.com/lthoerner/tui-textarea.git", branch = "main", features = ["ratatui-crossterm"], default-features=false }
 crossterm-026 = { package = "crossterm", version = "0.26" }
 ratatui = { package = "ratatui", version = "0.22", default-features = false, features = ["crossterm"]}
