@@ -4,7 +4,6 @@ mod textwidget;
 mod weather;
 
 use crossterm_026 as crossterm;
-use weather::request_weather;
 
 use std::{error::Error, io};
 
@@ -32,7 +31,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
   terminal.show_cursor()?;
   
   // TODO :tmp
-  request_weather().await?;
+  // request_weather().await?;
 
   if let Err(err) = res {
     println!("{err:?}");

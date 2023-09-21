@@ -18,6 +18,7 @@ struct CurrentWeather {
   time: String,
 }
 
+// TODO: switch to daily readings instead
 #[derive(Deserialize, Debug)]
 #[allow(unused)]
 struct WeatherResponse {
@@ -95,7 +96,8 @@ pub fn convert_code(code: u8) -> Weather {
   }
 }
 
-pub async fn request_weather() -> Result<(), reqwest::Error> {
+pub async fn fetch_weather() -> Result<Weather, reqwest::Error> {
+  // TODO: get user coords
   let lat = 12.97;
   let long = 77.59;
 
@@ -115,5 +117,5 @@ pub async fn request_weather() -> Result<(), reqwest::Error> {
   println!("{:?}", val);
   let res = convert_code(val.current_weather.weathercode);
   println!("{} {}", res.icon, res.condition);
-  Ok(())
+  Ok(res)
 }

@@ -9,7 +9,7 @@ pub struct TextWidget<'a> {
 impl<'a> TextWidget<'a> {
   pub fn new() -> Self {
     let mut text_widget = TextWidget {textarea: TextArea::default(), active: false};
-    text_widget.textarea.set_block(Block::default().borders(Borders::ALL).title("Today's journal entry..."));
+    text_widget.textarea.set_block(Block::default().borders(Borders::ALL).title("journal"));
 
     return text_widget;      
   } 

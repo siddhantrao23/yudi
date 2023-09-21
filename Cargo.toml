@@ -10,8 +10,9 @@ edition = "2021"
 # TODO: clean up
 tui-textarea = { git = "https://github.com/lthoerner/tui-textarea.git", branch = "main", features = ["ratatui-crossterm"], default-features=false }
 crossterm-026 = { package = "crossterm", version = "0.26" }
-ratatui = { package = "ratatui", version = "0.22", default-features = false, features = ["crossterm"]}
+ratatui = { package = "ratatui", version = "0.22", default-features = false, features = ["crossterm", "widget-calendar"]}
 reqwest = { version = "*", features = ["json"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 serde_json = "*"
 serde = { version = "*", features = ["derive"] }
+time = { version = "*", features = ["local-offset"] }
