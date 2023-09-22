@@ -18,10 +18,27 @@ struct CurrentWeather {
   time: String,
 }
 
+#[derive(Deserialize, Debug)]
+struct Units {
+  time: String,
+  weathercode: String,
+  temperature_2m_max: String,
+  temperature_2m_min: String,
+} 
+
+
+#[derive(Deserialize, Debug)]
+struct ForecastData {
+  time: Vec<String>,
+  weathercode: Vec<u8>,
+  temperature_2m_max: Vec<f64>,
+  temperature_2m_min: Vec<f64>,
+}
+
 // TODO: switch to daily readings instead
 #[derive(Deserialize, Debug)]
 #[allow(unused)]
-struct WeatherResponse {
+struct WeatherData {
   latitude: f64,
   longitude: f64,
   generationtime_ms: f64,
@@ -30,6 +47,8 @@ struct WeatherResponse {
   timezone_abbreviation: String,
   elevation: f64,
   current_weather: CurrentWeather,
+  daily_units: Units,
+  daily: ForecastData,
 }
 
 pub fn convert_code(code: u8) -> Weather {
@@ -102,9 +121,9 @@ pub async fn fetch_weather() -> Result<Weather, reqwest::Error> {
   let long = 77.59;
 
   let url = format!(
-    "https://api.open-meteo.com/v1/forecast?latitude={}&longitude={}&current_weather=true&timezone=auto",
-      lat,
-      long
+    "https://api.open-meteo.com/v1/forecast?latitude={}&longitude={}&daily=weathercode,temperature_2m_max,temperature_2m_min&current_weather=true&timezone=auto&past_days=7&forecast_days=1",
+    lat,
+    long,
   );
 
   let weather_data = reqwest::get(url)
@@ -112,9 +131,10 @@ pub async fn fetch_weather() -> Result<Weather, reqwest::Error> {
     .text()
     .await?;
 
-  let val:WeatherResponse = serde_json::from_str(&weather_data).unwrap();
+  println!("{:?}", weather_data);
+  let val: WeatherData = serde_json::from_str(&weather_data).unwrap();
 
-  println!("{:?}", val);
+  println!("{:?}", val.daily.weathercode[0]);
   let res = convert_code(val.current_weather.weathercode);
   println!("{} {}", res.icon, res.condition);
   Ok(res)

@@ -1,5 +1,5 @@
 use tui_textarea::TextArea;
-use ratatui::{style::{Style, Modifier, Color}, widgets::{Block, Borders}};
+use ratatui::{style::{Style, Modifier, Color}, widgets::{Block, Borders, Padding}};
 
 pub struct TextWidget<'a> {
   pub textarea: TextArea<'a>,
@@ -9,7 +9,11 @@ pub struct TextWidget<'a> {
 impl<'a> TextWidget<'a> {
   pub fn new() -> Self {
     let mut text_widget = TextWidget {textarea: TextArea::default(), active: false};
-    text_widget.textarea.set_block(Block::default().borders(Borders::ALL).title("journal"));
+    text_widget.textarea.set_block(
+      Block::default()
+        .borders(Borders::ALL)
+        .title("journal")
+    );
 
     return text_widget;      
   } 

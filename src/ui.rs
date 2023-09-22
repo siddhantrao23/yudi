@@ -2,7 +2,7 @@ use crossterm_026::event;
 use ratatui::{
   Frame, text::Line, symbols::DOT,
   layout::{Layout, Direction, Constraint}, 
-  widgets::{Block, Tabs, calendar::{Monthly, CalendarEventStore}, Paragraph, Wrap, List, ListItem}, 
+  widgets::{Block, Tabs, calendar::{Monthly, CalendarEventStore}, Paragraph, Wrap, List, ListItem, Padding}, 
   style::{Style, Modifier, Color},
   backend::Backend,
 };
@@ -23,7 +23,7 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App) {
   .collect();
 
   let items = List::new(items)
-    .block(Block::default())
+    .block(Block::default().padding(Padding::new(10, 10, 2, 2)))
     .highlight_style(
       Style::default().add_modifier(Modifier::BOLD)
     )

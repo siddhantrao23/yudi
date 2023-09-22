@@ -14,7 +14,7 @@ impl<T> StatefulList<T> {
   fn next(&mut self) {
     let i = match self.state.selected() {
       Some(i) => {
-        if i > self.items.len() - 1 { 0 }
+        if i >= self.items.len() - 1 { 0 }
         else { i + 1 }
       },
       None => 0,
@@ -42,6 +42,7 @@ pub struct App<'a> {
   pub running: bool,
   pub titles: Vec<&'a str>,
   pub tab_index: usize,
+  // TODO: enable enter and new line wrapping
   pub text_widget: TextWidget<'a>,
   pub weather: StatefulList<(&'a str, usize)>,
 }
@@ -92,8 +93,8 @@ impl<'a> App<'a> {
         },
         Input {key: Key::Tab, ..} | Input {key: Key::Right, ..} => self.next(),
         Input {key: Key::Left, ..} => self.weather.unselect(),
-        Input {key: Key::Up, ..} => self.weather.next(),
-        Input {key: Key::Down, ..} => self.weather.previous(),
+        Input {key: Key::Up, ..} => self.weather.previous(),
+        Input {key: Key::Down, ..} => self.weather.next(),
         Input {key: Key::Char('i'), ..} => {
           self.text_widget.activate();
         },
