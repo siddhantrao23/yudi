@@ -23,7 +23,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
   let backend = CrosstermBackend::new(stdout);
   let mut terminal = Terminal::new(backend)?;
 
-  let mut app = App::new();
+  let mut app = App::new(fetch_weather().await?);
+  
   app.text_widget.inactivate();
   let res = app.run(&mut terminal);
 
@@ -31,9 +32,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
   execute!(terminal.backend_mut(), LeaveAlternateScreen, DisableMouseCapture)?;
   terminal.show_cursor()?;
   
-  // TODO :tmp
-  fetch_weather().await?;
-
   if let Err(err) = res {
     println!("{err:?}");
   }

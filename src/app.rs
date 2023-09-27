@@ -44,27 +44,21 @@ pub struct App<'a> {
   pub tab_index: usize,
   // TODO: enable enter and new line wrapping
   pub text_widget: TextWidget<'a>,
-  pub weather: StatefulList<(&'a str, usize)>,
+  pub weather_widget: StatefulList<(String, usize)>,
 }
 
-impl<'a> Default for App<'a> {
-  fn default() -> Self {
+impl<'a> App<'a> {
+  pub fn new(history: Vec<(String, usize)>) -> Self {
     Self {
       running: true,
       titles: vec!["day", "week", "month"],
       tab_index: 0,
       text_widget: TextWidget::new(),
-      weather: StatefulList {
-        items: vec![("❆", 1), ("🌧", 2)],
+      weather_widget: StatefulList {
+        items: history,
         state: ListState::default(),
       }
     }
-  }
-}
-
-impl<'a> App<'a> {
-  pub fn new() -> Self {
-    Self::default()
   }
 
   pub fn next(&mut self) {
@@ -92,9 +86,9 @@ impl<'a> App<'a> {
           self.text_widget.inactivate();
         },
         Input {key: Key::Tab, ..} | Input {key: Key::Right, ..} => self.next(),
-        Input {key: Key::Left, ..} => self.weather.unselect(),
-        Input {key: Key::Up, ..} => self.weather.previous(),
-        Input {key: Key::Down, ..} => self.weather.next(),
+        Input {key: Key::Left, ..} => self.weather_widget.unselect(),
+        Input {key: Key::Up, ..} => self.weather_widget.previous(),
+        Input {key: Key::Down, ..} => self.weather_widget.next(),
         Input {key: Key::Char('i'), ..} => {
           self.text_widget.activate();
         },
@@ -103,5 +97,9 @@ impl<'a> App<'a> {
         },
       }
     }
+  }
+
+  pub fn populate_weather(&mut self) {
+
   }
 }

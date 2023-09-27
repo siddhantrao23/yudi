@@ -1,3 +1,5 @@
+use std::string;
+
 use serde::Deserialize;
 
 use reqwest;
@@ -115,7 +117,7 @@ pub fn convert_code(code: u8) -> Weather {
   }
 }
 
-pub async fn fetch_weather() -> Result<Weather, reqwest::Error> {
+pub async fn fetch_weather() -> Result<Vec<(String, usize)>, reqwest::Error> {
   // TODO: get user coords
   let lat = 12.97;
   let long = 77.59;
@@ -131,11 +133,19 @@ pub async fn fetch_weather() -> Result<Weather, reqwest::Error> {
     .text()
     .await?;
 
-  println!("{:?}", weather_data);
+  // println!("{:?}", weather_data);
   let val: WeatherData = serde_json::from_str(&weather_data).unwrap();
 
-  println!("{:?}", val.daily.weathercode[0]);
-  let res = convert_code(val.current_weather.weathercode);
-  println!("{} {}", res.icon, res.condition);
+  let mut res: Vec<(String, usize)> = vec![];
+  for i in 0..val.daily.time.len() {
+    let code = convert_code(val.daily.weathercode[i]);
+    res.push((
+      format!("{}\t\t{}\t{}\t{}{}-{}{}", val.daily.time[i],
+        code.icon, code.condition, 
+        val.daily.temperature_2m_max[i], val.daily_units.temperature_2m_max, 
+        val.daily.temperature_2m_min[i], val.daily_units.temperature_2m_min)
+    , i));
+  }
+
   Ok(res)
 }

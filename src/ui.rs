@@ -14,11 +14,14 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App) {
   let size = f.size();
   let chunks = Layout::default()
     .direction(Direction::Horizontal)
-    .constraints([Constraint::Percentage(50), Constraint::Percentage(50)].as_ref())
+    .constraints([Constraint::Percentage(75), Constraint::Percentage(25)].as_ref())
     .split(size);
 
-  let items: Vec<ListItem> = app.weather.items.iter().map(|i| {
-    ListItem::new("abc")
+  // TODO: make this read better
+  let items: Vec<ListItem> = app.weather_widget.items.
+    iter()
+    .map(|i| {
+      ListItem::new(i.0.clone())
   })
   .collect();
 
@@ -29,7 +32,7 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     )
     .highlight_symbol("•  ");
 
-  f.render_stateful_widget(items, chunks[0], &mut app.weather.state);
+  f.render_stateful_widget(items, chunks[0], &mut app.weather_widget.state);
   f.render_widget(app.text_widget.textarea.widget(), chunks[1]);
 }
 
