@@ -1,5 +1,3 @@
-use std::string;
-
 use serde::Deserialize;
 
 use reqwest;
@@ -21,6 +19,7 @@ struct CurrentWeather {
 }
 
 #[derive(Deserialize, Debug)]
+#[allow(unused)]
 struct Units {
   time: String,
   weathercode: String,
@@ -37,7 +36,6 @@ struct ForecastData {
   temperature_2m_min: Vec<f64>,
 }
 
-// TODO: switch to daily readings instead
 #[derive(Deserialize, Debug)]
 #[allow(unused)]
 struct WeatherData {
@@ -140,7 +138,7 @@ pub async fn fetch_weather() -> Result<Vec<(String, usize)>, reqwest::Error> {
   for i in 0..val.daily.time.len() {
     let code = convert_code(val.daily.weathercode[i]);
     res.push((
-      format!("{}\t\t{}\t{}\t{}{}-{}{}", val.daily.time[i],
+      format!("{}  {}  {}  {}{}-{}{}", val.daily.time[i],
         code.icon, code.condition, 
         val.daily.temperature_2m_max[i], val.daily_units.temperature_2m_max, 
         val.daily.temperature_2m_min[i], val.daily_units.temperature_2m_min)

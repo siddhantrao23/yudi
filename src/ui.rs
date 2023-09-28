@@ -1,12 +1,12 @@
-use crossterm_026::event;
+
 use ratatui::{
-  Frame, text::Line, symbols::DOT,
+  Frame, text::Line,
   layout::{Layout, Direction, Constraint}, 
-  widgets::{Block, Tabs, calendar::{Monthly, CalendarEventStore}, Paragraph, Wrap, List, ListItem, Padding}, 
-  style::{Style, Modifier, Color},
+  widgets::{Block, List, ListItem, Padding}, 
+  style::{Style, Modifier},
   backend::Backend,
 };
-use time::{OffsetDateTime, Date};
+
 
 use crate::app::App;
 
@@ -14,21 +14,22 @@ pub fn render<B: Backend>(f: &mut Frame<B>, app: &mut App) {
   let size = f.size();
   let chunks = Layout::default()
     .direction(Direction::Horizontal)
-    .constraints([Constraint::Percentage(75), Constraint::Percentage(25)].as_ref())
+    .constraints([Constraint::Percentage(70), Constraint::Percentage(30)].as_ref())
     .split(size);
 
-  // TODO: make this read better
-  let items: Vec<ListItem> = app.weather_widget.items.
-    iter()
+  let items: Vec<ListItem> = app.weather_widget.items
+    .iter()
     .map(|i| {
-      ListItem::new(i.0.clone())
+      let mut lines = vec![Line::from(i.0.clone())];
+      lines.push(Line::from("\n"));
+      ListItem::new(lines).style(Style::default().add_modifier(Modifier::DIM))
   })
   .collect();
 
   let items = List::new(items)
     .block(Block::default().padding(Padding::new(10, 10, 2, 2)))
     .highlight_style(
-      Style::default().add_modifier(Modifier::BOLD)
+      Style::default().add_modifier(Modifier::BOLD).remove_modifier(Modifier::DIM)
     )
     .highlight_symbol("•  ");
 

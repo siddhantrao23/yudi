@@ -1,9 +1,9 @@
 use std::io;
 
 use crossterm_026::event;
-use ratatui::{Terminal, prelude::Backend, widgets::{ListState, List}};
+use ratatui::{Terminal, prelude::Backend, widgets::ListState};
 use tui_textarea::{Input, Key};
-use crate::{ui::render, textwidget::TextWidget, weather::fetch_weather};
+use crate::{ui::render, textwidget::TextWidget};
 
 pub struct StatefulList<T> {
   pub items: Vec<T>,
@@ -32,17 +32,12 @@ impl<T> StatefulList<T> {
     };
     self.state.select(Some(i));
   }
-
-  fn unselect(&mut self) {
-    self.state.select(None);
-  }
 }
 
 pub struct App<'a> {
   pub running: bool,
   pub titles: Vec<&'a str>,
   pub tab_index: usize,
-  // TODO: enable enter and new line wrapping
   pub text_widget: TextWidget<'a>,
   pub weather_widget: StatefulList<(String, usize)>,
 }
@@ -61,45 +56,42 @@ impl<'a> App<'a> {
     }
   }
 
-  pub fn next(&mut self) {
-    self.tab_index = (self.tab_index + 1) % self.titles.len();
-  }
-
-  pub fn previous(&mut self) {
-    if self.tab_index > 0 {
-      self.tab_index -= 1;
-    } else {
-      self.tab_index = self.titles.len() - 1;
-    }
-  }
-
   pub fn run<B: Backend>(&mut self, terminal: &mut Terminal<B>) -> io::Result<()> {
     loop {
       terminal.draw(|f| render(f, self))?;
 
-      match event::read()?.into() {
-        Input {key: Key::Char('q'), ..}
-        | Input {key: Key::Char('c'), ctrl: true, ..}
-            => return Ok(()), 
-        Input { key: Key::Esc, .. } | Input {key: Key::Enter, ..} => { 
-          // save journal data
-          self.text_widget.inactivate();
-        },
-        Input {key: Key::Tab, ..} | Input {key: Key::Right, ..} => self.next(),
-        Input {key: Key::Left, ..} => self.weather_widget.unselect(),
-        Input {key: Key::Up, ..} => self.weather_widget.previous(),
-        Input {key: Key::Down, ..} => self.weather_widget.next(),
-        Input {key: Key::Char('i'), ..} => {
-          self.text_widget.activate();
-        },
-        input => if self.text_widget.active {
-          self.text_widget.textarea.input(input);
-        },
+      let input = event::read()?.into();
+      if self.text_widget.active == false {
+        match input {
+          Input {key: Key::Char('q'), ..} | 
+            Input {key: Key::Char('c'), ctrl: true, ..} => {
+              return Ok(())
+          }, 
+          Input {key: Key::Up, ..} => self.weather_widget.previous(),
+          Input {key: Key::Down, ..} => self.weather_widget.next(),
+          Input {key: Key::Char('i'), ..} => {
+            self.text_widget.activate();
+          },
+          _ => {},
+        }
+      } else {
+        match input {
+          Input {key: Key::Char('q'), ..} => {
+            self.text_widget.textarea.input(input);
+          }
+          Input {key: Key::Char('c'), ctrl: true, ..} => return Ok(()), 
+          Input { key: Key::Esc, .. } => { 
+            // save journal data
+            self.text_widget.inactivate();
+          },
+          Input {key: Key::Char('i'), ..} => {
+            self.text_widget.textarea.input(input);
+          },
+          input => if self.text_widget.active {
+            self.text_widget.textarea.input(input);
+          },
+        }
       }
     }
-  }
-
-  pub fn populate_weather(&mut self) {
-
   }
 }

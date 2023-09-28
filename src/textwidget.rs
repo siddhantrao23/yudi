@@ -1,5 +1,5 @@
 use tui_textarea::TextArea;
-use ratatui::{style::{Style, Modifier, Color}, widgets::{Block, Borders, Padding}};
+use ratatui::{style::{Style, Modifier, Color}, widgets::{Block, Borders}};
 
 pub struct TextWidget<'a> {
   pub textarea: TextArea<'a>,
